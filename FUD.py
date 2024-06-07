@@ -3,7 +3,7 @@ import subprocess
 import os
 import platform
 
-def find_unused_dependencies(project_dir, formatter_jar, debug):
+def find_unused_dependencies(project_dir, formatter_jar, debug, agree=False):
     project_dir = os.path.expanduser(project_dir)
     java_files = glob.glob(f"{project_dir}/**/*.java", recursive=True)
     total_files = len(java_files)
@@ -53,11 +53,13 @@ def find_unused_dependencies(project_dir, formatter_jar, debug):
         print("\n".join(unused_imports))
         print("\n" + "-" * 100)
 
+        if not agree:
         # 사용자의 입력 받기
-        response = input("Do you want to remove unused import statements? (y/n): ")
+            response = input("Do you want to remove unused import statements? (y/n): ")
+            agree = True if response.lower() == 'y' else False
 
         # 사용자가 'y'를 입력한 경우
-        if response.lower() == 'y':
+        if agree:
             # 각 Java 파일에 Google Java Formatter를 적용하여 포맷팅 및 사용되지 않는 import문 제거
             for file in java_files:
                 print(f"\n[+] Formatting and removing unused import statements: {file}")
