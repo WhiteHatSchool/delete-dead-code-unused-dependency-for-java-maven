@@ -9,7 +9,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='FUD: Find DeadCode & Unused Dependencies in Java Project')
 
     # 2. Argument 추가
-    parser.add_argument('-y', type=bool, dest="agree", action="store_true", help="동의 옵션에서 모두 y를 선택")
+    parser.add_argument('-y', dest="agree", action="store_true", help="동의 옵션에서 모두 y를 선택")
     parser.add_argument('-p', '--project', dest="project" , action="store", type=str, default=None, help="프로젝트 경로")
     parser.add_argument('-f', '--formater', dest="format" , action="store", type=str, default=None, help="formater 경로")
     
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     # 사용자로부터 프로젝트 경로 입력 받기
     if args.project is None:
         project_dir = input("Write the project's directory: ")
-    project_dir = os.path.expanduser(project_dir)  # 확장
+    project_dir = os.path.expanduser(args.project)  # 확장
 
     # 데드코드 제거 여부 묻기
     remove_deadcode = args.agree
