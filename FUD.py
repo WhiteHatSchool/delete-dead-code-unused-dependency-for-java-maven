@@ -35,7 +35,7 @@ def list_of_unused_import(all_import, used_import):
         if import_line not in used_import:
             unused_imports.add(import_line)
 
-    return unused_imports
+    return list(unused_imports)
 
 
 def find_unused_dependencies(project_dir, formatter_jar, agree=False, callback=None):
@@ -70,7 +70,7 @@ def find_unused_dependencies(project_dir, formatter_jar, agree=False, callback=N
     # 미사용 의존성을 지우지 않는 경우
     if not agree:
         print("\nNo input from user. No formatting and import statement removal is performed. ;(\n")
-        return list(unused_imports)    
+        return unused_imports    
     
     current_file_index = 0
     # 각 Java 파일에 Google Java Formatter를 적용하여 포맷팅 및 사용되지 않는 import문 제거
@@ -80,4 +80,4 @@ def find_unused_dependencies(project_dir, formatter_jar, agree=False, callback=N
         current_file_index = current_file_index + 1
         callback(current_file_index, total_files, file, "Removing")
 
-    return list[unused_imports]
+    return unused_imports
