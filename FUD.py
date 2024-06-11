@@ -51,7 +51,7 @@ def find_unused_dependencies(project_dir, formatter_jar, agree=False, callback=N
         imports, used_import = get_import_list(formatter_jar, file)
         
         all_imports += imports
-        used_import.update(used_import)
+        used_imports.update(used_import)
 
         current_file_index += 1
         callback(current_file_index, total_files, file, "Finding")
