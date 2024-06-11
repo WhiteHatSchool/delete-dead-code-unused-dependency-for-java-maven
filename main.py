@@ -1,23 +1,53 @@
+import os
+import re
+import glob
+import argparse
+
 from remove_deadcode import handle_deadcode
 from FUD import find_unused_dependencies
-import os
+import xml.etree.ElementTree as ET
 
 def progress_callback(idx, cnt, file, step_name):
     progress_percent = round((idx / cnt) * 100, 2)
-    print(f"[{step_name}] {file}... {progress_percent}% ({idx} / {cnt})")
+    print(f"[{step_name}] {progress_percent}% ({idx} / {cnt}) - {file}...")
+
+
+def del_dead_code(project_path):
+    handle_deadcode(project_path)
 
 
 def get_unused_import(project_path, formatter_path, agree, callback = None, remove_deadcode = True):
-    # Deadcode 처리
-    if remove_deadcode:
-        handle_deadcode(project_path)
-
     return find_unused_dependencies(project_path, formatter_path, agree, callback=progress_callback)
 
 
-if __name__ == "__main__":
-    import argparse
+def pom_path_lists(pom_path_lists: list):
+    group_id = set()
+    for file in pom_path_lists:
+        tree = ET.parse(file)
+        root = tree.getroot()
 
+        xmlns = ''
+
+        m = re.search('{.*}', root.tag)
+        if m:
+            xmlns = m.group(0)
+        
+        group_id.add(root.find(xmlns+'groupId').text)
+
+    return list(group_id)
+
+
+def remove_elements_containing_substring(lst, substring):
+    return [element for element in lst if substring not in element]
+
+
+def del_local_dependency(unused_imports, project_group_id):
+    for group_id in project_group_id:
+        unused_imports = remove_elements_containing_substring(unused_data, group_id)
+
+    return unused_imports
+
+if __name__ == "__main__":
     # 1. Parser 생성
     parser = argparse.ArgumentParser(description='FUD: Find DeadCode & Unused Dependencies in Java Project')
 
@@ -38,7 +68,15 @@ if __name__ == "__main__":
     if not remove_deadcode:
         remove_deadcode_option = input("Do you want to remove dead code? (y/n): ")
         remove_deadcode = True if remove_deadcode_option.lower() == "y" else False
-
+    
+    if remove_deadcode:
+        del_dead_code(project_dir)
+    
     # FUD.py 코드 실행
     formatter_jar = "./google-java-format-1.22.0-all-deps.jar" if args.format is None else args.format
-    print(get_unused_import(project_dir, formatter_jar, agree=args.agree, callback=progress_callback))
+    unused_data = get_unused_import(project_dir, formatter_jar, agree=args.agree, callback=progress_callback)
+    
+    pom_files = glob.glob(f"{os.path.expanduser(project_dir)}/**/pom.xml", recursive=True)    
+    project_group_id = pom_path_lists(pom_files)
+
+    print(del_local_dependency(unused_data, project_group_id))
