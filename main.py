@@ -2,6 +2,19 @@ from remove_deadcode import handle_deadcode
 from FUD import find_unused_dependencies
 import os
 
+def progress_callback(idx, cnt, file, step_name):
+    progress_percent = round((idx / cnt) * 100, 2)
+    print(f"[{step_name}] {file}... {progress_percent}% ({idx} / {cnt})")
+
+
+def get_unused_import(project_path, formatter_path, agree, callback = None, remove_deadcode = True):
+    # Deadcode 처리
+    if remove_deadcode:
+        handle_deadcode(project_path)
+
+    return find_unused_dependencies(project_path, formatter_path, agree, callback=progress_callback)
+
+
 if __name__ == "__main__":
     import argparse
 
@@ -26,17 +39,6 @@ if __name__ == "__main__":
         remove_deadcode_option = input("Do you want to remove dead code? (y/n): ")
         remove_deadcode = True if remove_deadcode_option.lower() == "y" else False
 
-    # 디버그 옵션 입력 받기 (y/n)
-    debug = args.agree
-    if not debug:
-        debug_option = input("Do you want to enable debug output? (y/n): ")
-        debug = True if debug_option.lower() == "y" else False
-
-    # Deadcode 처리
-    if remove_deadcode:
-        print("\n" + "-" * 100)
-        handle_deadcode(project_dir, debug)
-
     # FUD.py 코드 실행
     formatter_jar = "./google-java-format-1.22.0-all-deps.jar" if args.format is None else args.format
-    find_unused_dependencies(project_dir, formatter_jar, debug, agree=args.agree)
+    print(get_unused_import(project_dir, formatter_jar, agree=args.agree, callback=progress_callback))

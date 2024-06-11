@@ -3,12 +3,14 @@ import re
 import subprocess
 import platform
 
+
 def make_executable(path):
     """Make the file at the given path executable."""
     if platform.system() != 'Windows':
         mode = os.stat(path).st_mode
         mode |= (mode & 0o444) >> 2    # Copy R bits to X.
         os.chmod(path, mode)
+
 
 def run_pmd(pmd_path, project_dir, ruleset_path, report_path):
     try:
@@ -26,6 +28,7 @@ def run_pmd(pmd_path, project_dir, ruleset_path, report_path):
         print(e.output)
         print(e.stderr)  # 오류 메시지 출력 추가
         raise RuntimeError("Failed to run PMD analysis")
+
 
 def parse_pmd_report(report_path):
     deadcode_positions = []
@@ -48,6 +51,7 @@ def parse_pmd_report(report_path):
                     print("Unexpected format: " + line.strip())  # 예상치 못한 형식
     return deadcode_positions
 
+
 def remove_unused_line(lines, line_number, removed_lines, line_adjustments, first_pass):
     line_index = line_number - 1
     if 0 <= line_index < len(lines):
@@ -58,6 +62,7 @@ def remove_unused_line(lines, line_number, removed_lines, line_adjustments, firs
         if not first_pass:
             for i in range(line_index, len(line_adjustments)):
                 line_adjustments[i] += 1  # 이후 라인의 원본 줄 번호를 1씩 증가
+
 
 def remove_unused_private_method(lines, line_number, removed_lines, line_adjustments, first_pass):
     start_line = line_number - 1
@@ -90,7 +95,7 @@ def remove_unused_private_method(lines, line_number, removed_lines, line_adjustm
         for i in range(start_line, len(line_adjustments)):
             line_adjustments[i] += (end_line - start_line)
 
-def remove_deadcode(file_path, issues, first_pass, debug):
+def remove_deadcode(file_path, issues, first_pass, debug = False):
     if not os.path.exists(file_path):
         if debug:
             print("File does not exist: " + file_path)  # 파일이 존재하지 않습니다
@@ -113,7 +118,8 @@ def remove_deadcode(file_path, issues, first_pass, debug):
 
     return removed_lines, line_adjustments
 
-def handle_deadcode(project_dir, debug):
+
+def handle_deadcode(project_dir, debug = False):
     base_dir = os.path.dirname(os.path.abspath(__file__))  # 현재 디렉토리를 기준으로 경로 설정
     if platform.system() == 'Windows':
         pmd_path = os.path.join(base_dir, "PMD_deadcode_search", "bin", "pmd.bat")  # PMD 실행 파일의 경로
