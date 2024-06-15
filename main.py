@@ -17,7 +17,7 @@ def del_dead_code(project_path):
 
 
 def get_unused_import(project_path, formatter_path, agree, callback = None, remove_deadcode = True):
-    return find_unused_dependencies(project_path, formatter_path, agree, callback=progress_callback)
+    return find_unused_dependencies(project_path, formatter_path, callback=progress_callback)
 
 
 def pom_path_lists(pom_path_lists: list):
