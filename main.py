@@ -16,8 +16,8 @@ def del_dead_code(project_path):
     handle_deadcode(project_path)
 
 
-def get_unused_import(project_path, formatter_path, agree, callback = None, remove_deadcode = True):
-    return find_unused_dependencies(project_path, formatter_path, callback=progress_callback)
+def get_unused_import(project_path, formatter_path, callback = progress_callback):
+    return find_unused_dependencies(project_path, formatter_path, callback=callback)
 
 
 def pom_path_lists(pom_path_lists: list):
@@ -47,6 +47,14 @@ def del_local_dependency(unused_imports, project_group_id):
 
     return unused_imports
 
+def pom_project_process(project_dir_path: str, formatter_jar_path: str):
+    del_dead_code(project_dir)
+    unused_data = get_unused_import(project_dir_path, formatter_jar_path, callback=progress_callback)
+    pom_files = glob.glob(f"{os.path.expanduser(project_dir_path)}/**/pom.xml", recursive=True)
+    project_group_id = pom_path_lists(pom_files)
+
+    return del_local_dependency(unused_data, project_group_id)
+
 if __name__ == "__main__":
     # 1. Parser 생성
     parser = argparse.ArgumentParser(description='FUD: Find DeadCode & Unused Dependencies in Java Project')
@@ -74,7 +82,7 @@ if __name__ == "__main__":
     
     # FUD.py 코드 실행
     formatter_jar = "./google-java-format-1.22.0-all-deps.jar" if args.format is None else args.format
-    unused_data = get_unused_import(project_dir, formatter_jar, agree=args.agree, callback=progress_callback)
+    unused_data = get_unused_import(project_dir, formatter_jar, callback=progress_callback)
     
     pom_files = glob.glob(f"{os.path.expanduser(project_dir)}/**/pom.xml", recursive=True)    
     project_group_id = pom_path_lists(pom_files)
