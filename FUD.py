@@ -7,13 +7,13 @@ def get_java_file_list(project_dir):
     return glob.glob(f"{os.path.expanduser(project_dir)}/**/*.java", recursive=True)
 
 
-def get_import_list(formatter_jar, file):
+def get_import_list(file):
     file_import = []
     # 파일을 읽을 때 인코딩을 명시적으로 지정
     with open(file, "r", encoding="utf-8") as f:
         file_import += [line.strip() for line in f if line.strip().startswith("import")]
 
-    return list(map(lambda x: x.replace("import ", "").replace(";", ""), file_import))
+    return list(map(lambda x: x.replace("import ", "").replace("static ", "").replace(";", ""), file_import))
 
 
 def del_unused_import(formatter_jar, file):
@@ -54,7 +54,7 @@ def find_unused_dependencies(project_dir, formatter_jar, callback=None):
     current_file_index = 0
     # 포맷팅된 파일에서 사용된 import 문과 원본 파일의 import 문 비교
     for file in java_files:
-        all_imports += get_import_list(formatter_jar, file)
+        all_imports += get_import_list(file)
 
         current_file_index += 1
         callback(current_file_index, total_files, file, "Finding")
@@ -66,7 +66,7 @@ def find_unused_dependencies(project_dir, formatter_jar, callback=None):
     for file in java_files:
         del_unused_import(formatter_jar, file)
 
-        used_import.update(get_import_list(formatter_jar, file))
+        used_import.update(get_import_list(file))
         current_file_index = current_file_index + 1
         callback(current_file_index, total_files, file, "Removing")
 
