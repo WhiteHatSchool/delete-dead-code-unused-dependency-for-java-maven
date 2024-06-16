@@ -31,8 +31,10 @@ def pom_path_lists(pom_path_lists: list):
         m = re.search('{.*}', root.tag)
         if m:
             xmlns = m.group(0)
-        
-        group_id.add(root.find(xmlns+'groupId').text)
+
+        tag = root.find(xmlns + 'groupId')
+        if tag is not None:
+            group_id.add(tag.text)
 
     return list(group_id)
 
@@ -83,8 +85,8 @@ if __name__ == "__main__":
     # FUD.py 코드 실행
     formatter_jar = "./google-java-format-1.22.0-all-deps.jar" if args.format is None else args.format
     unused_data = get_unused_import(project_dir, formatter_jar, callback=progress_callback)
-    
-    pom_files = glob.glob(f"{os.path.expanduser(project_dir)}/**/pom.xml", recursive=True)    
+
+    pom_files = glob.glob(f"{os.path.expanduser(project_dir)}/**/pom.xml", recursive=True)
     project_group_id = pom_path_lists(pom_files)
 
     print(del_local_dependency(unused_data, project_group_id))
